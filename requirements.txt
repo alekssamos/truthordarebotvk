@@ -1,0 +1,8 @@
+vkbottle==4.1.11
+vkbottle-types==5.131.131.13
+aiofiles
+aiohttp
+sqlalchemy[asyncio,mypy]
+aiosqlite
+python-dotenv==0.20.0
+loguru
