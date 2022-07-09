@@ -7,7 +7,7 @@ Base = declarative_base() # type: ignore
 
 def _get_pairs(players):
     from services.game import make_pairs_of_players as make # type: ignore 
-    return make(self.users, False) + make(self.users, True)
+    return make(players, False) + make(players, True)
 
 class VKUsers(Base): # type: ignore
     __tablename__ = 'vkusers'
