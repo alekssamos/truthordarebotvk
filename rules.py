@@ -11,7 +11,7 @@ class ChatAdminRule(ABCRule[Message]):
                 peer_id=message.peer_id
             )
         except VKAPIError[917]:
-            loggger.exception("I not admin")
+            logger.exception("I not admin")
             return False
         admins = {member.member_id for member in members.items if member.is_admin}
         if message.from_id in admins:
