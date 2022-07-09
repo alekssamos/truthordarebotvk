@@ -77,6 +77,8 @@ async def end_recruitment_handler(message: Message):
     enum_players:str = ""
     async with async_session() as session:
         chat = await get_or_create_chat(message.peer_id, session)
+        if not chat.is_recruitment_of_new_players:
+            return None
         try:
             await chat.stop_recruitment(session)
             await chat.start_game(session)
