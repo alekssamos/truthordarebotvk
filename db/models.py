@@ -5,6 +5,10 @@ from sqlalchemy.orm import relationship
 from sqlalchemy.ext.declarative import declarative_base
 Base = declarative_base() # type: ignore
 
+def _get_pairs(players):
+    from services.game import make_pairs_of_players as make # type: ignore 
+    return make(self.users, False) + make(self.users, True)
+
 class VKUsers(Base): # type: ignore
     __tablename__ = 'vkusers'
     id = Column(Integer, primary_key=True)
@@ -94,14 +98,13 @@ class VKChats(Base): # type: ignore
 
     async def get_current_combination(self)->Optional[Tuple[Any, Any]]:
         from errors import GameNotStarted # type: ignore
-        from services.game import make_pairs_of_players # type: ignore
         logger.info(f"get current pair: i={self.combination_current_index}")
         if not self.is_active_game:
             raise GameNotStarted(
                 "The action can only be performed during the game",
                 peer_id=self.peer_id
             ) # type: ignore
-        pairs = make_pairs_of_players(self.users)
+        pairs = _get_pairs(self.users)
         i = self.combination_current_index
         if i >= len(pairs) or i < 0:
             logger.debug(f"i={i}")
@@ -110,7 +113,6 @@ class VKChats(Base): # type: ignore
 
     async def take_pair(self, session:Any)->Optional[Tuple[Any, Any]]:
         from db import async_session # type: ignore
-        from services.game import make_pairs_of_players # type: ignore
         from errors import GameNotStarted # type: ignore
         logger.info("Take new pair")
         if not self.is_active_game:
@@ -119,7 +121,7 @@ class VKChats(Base): # type: ignore
                 peer_id=self.peer_id
             ) # type: ignore
             return None
-        pairs = make_pairs_of_players(self.users)
+        pairs = _get_pairs(self.users)
         self.combination_current_index += 1 # type: ignore
         if self.combination_current_index >= len(pairs):
             logger.debug("We've reached the end of the game!")
