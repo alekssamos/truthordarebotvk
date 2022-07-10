@@ -8,21 +8,13 @@ bp = Blueprint()
 bp.labeler.message_view.replace_mention = True
 bp.labeler.vbml_ignore_case = True
 
-@bp.on.message(text=["Начать", "Start", "?", "Help", "Помощь", "Справка"])
+@bp.on.message(text=["Начать", "Start", "Help", "Помощь", "Справка"])
+@bp.on.private_message(text=["?", "!"])
 @bp.on.message(payload={"cmd":"start"})
 async def hi_handler(message: Message):
+    import strings
     u = await get_or_create_user(message.from_id, bp.api)
-    await message.answer("""
-    Бот для помощи с игрой "Правда или действие".
-    Команды:
-    !ник Новый_псевдоним -- изменить Ваше имя в игре.
-    Сейчас Ваш ник {}.
-    
-    Остальные команды доступны в беседе. Добавьте этого бота в беседу и сделайте админом.
-    !ни или !играть -- Начать новую  игру (только для админа беседы). После этого начнётся набор участников, остановится по команде !зн, по достижению 5 минут или 10 участников.
-    !зн или !завершить набор -- Завершить набор участников досрочно.
-    !зи или !завершить игру -- Завершить игру немедленно.
-    """.strip().format(u.mention))
+    await message.answer(strings.ru.start_message.format(u.mention).strip())
 
 @bp.on.message(text="!ник <nickname>")
 async def change_nick(message: Message, nickname=None):

@@ -10,7 +10,6 @@ from db.models import VKChats # type: ignore
 from services.users import get_or_create_user # type: ignore
 from services.chats import get_or_create_chat # type: ignore
 from rules import ChatAdminRule
-import config
 import errors
 import keyboards
 import strings
@@ -40,6 +39,7 @@ async def select_what(message):
 
 @logger.catch
 async def end_recruitment_expired(message):
+    import config
     minutes = config.recruitmentendtimeminute
     seconds = minutes * 60
     logger.info(f"waiting {minutes} minutes ({seconds} seconds)...")
@@ -52,6 +52,7 @@ async def end_recruitment_expired(message):
 @bp.on.chat_message(ChatAdminRule(), text=["!ни", "!играть", "!начать игру"])
 @logger.catch
 async def start_game_handler(message: Message):
+    import config
     logger.info("new game...")
     try:
         async with async_session() as session:
@@ -119,6 +120,7 @@ async def end_game_handler(message: Message):
 @bp.on.chat_message(payload={"cmd":"implay"})
 @logger.catch
 async def join_player_handler(message: Message):
+    import config
     logger.info("join player...")
     async with async_session() as session:
         chat = await get_or_create_chat(message.peer_id, session)

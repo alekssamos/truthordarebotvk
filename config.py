@@ -1,9 +1,20 @@
-import os
-from dotenv import load_dotenv
+from loguru import logger
+logger.debug("config imported")
+TOKEN:str=""
+dburl:str=""
+maxplayers:int=0
+recruitmentendtimeminute:int=0
 
-load_dotenv()
-TOKEN = os.getenv("TOKEN")
+def load_config():
+    from os import getenv
+    from dotenv import load_dotenv
+    load_dotenv()
 
-dburl = os.getenv("dburl", "sqlite+aiosqlite:///"+"db.sqlite3")
-maxplayers = int(os.getenv("maxplayers", 10))
-recruitmentendtimeminute = int(os.getenv("recruitmentendtimeminute", 5))
+    global TOKEN, dburl, maxplayers, recruitmentendtimeminute
+    TOKEN = getenv("TOKEN")
+    dburl = getenv("dburl", "sqlite+aiosqlite:///"+"db.sqlite3")
+    maxplayers = int(getenv("maxplayers", 10))
+    recruitmentendtimeminute = int(getenv("recruitmentendtimeminute", 5))
+    logger.debug("config loaded")
+
+load_config()
