@@ -62,6 +62,23 @@ async def start_game_handler(message: Message):
     except errors.RecruitmentOlreadyStarted as e:
         logger.exception(e.peer_id)
         asyncio.create_task(end_recruitment_expired(message))
+        msg = await message.answer(strings.ru.recruitment_already_started)
+        await asyncio.sleep(10)
+        await bp.api.messages.delete(
+            peer_id=message.peer_id,
+            cmids=message.conversation_message_id,
+            delete_for_all=1
+        )
+        return None
+    except errors.GameOlreadyStarted as e:
+        logger.exception(e.peer_id)
+        msg = await message.answer(strings.ru.game_already_started)
+        await asyncio.sleep(10)
+        await bp.api.messages.delete(
+            peer_id=message.peer_id,
+            cmids=message.conversation_message_id,
+            delete_for_all=1
+        )
         return None
     await message.answer(
         strings.ru.recruitment_started.format(
