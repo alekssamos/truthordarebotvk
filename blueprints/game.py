@@ -66,7 +66,7 @@ async def start_game_handler(message: Message):
         await asyncio.sleep(10)
         await bp.api.messages.delete(
             peer_id=message.peer_id,
-            cmids=message.conversation_message_id,
+            message_ids=msg,
             delete_for_all=1
         )
         return None
@@ -76,7 +76,7 @@ async def start_game_handler(message: Message):
         await asyncio.sleep(10)
         await bp.api.messages.delete(
             peer_id=message.peer_id,
-            cmids=message.conversation_message_id,
+            message_ids=msg,
             delete_for_all=1
         )
         return None
@@ -168,7 +168,7 @@ async def join_player_handler(message: Message):
             await asyncio.sleep(10)
             await bp.api.messages.delete(
                 peer_id=message.peer_id,
-                cmids=message.conversation_message_id,
+                message_ids=msg,
                 delete_for_all=1
             )
 
