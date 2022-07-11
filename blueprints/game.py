@@ -9,7 +9,7 @@ from db.models import VKUsers # type: ignore
 from db.models import VKChats # type: ignore
 from services.users import get_or_create_user # type: ignore
 from services.chats import get_or_create_chat # type: ignore
-from rules import ChatAdminRule
+from rules import ChatAdminRule, TextContainsRule
 import errors
 import keyboards
 import strings
@@ -17,6 +17,7 @@ import strings
 bp = Blueprint()
 bp.labeler.message_view.replace_mention = True
 bp.labeler.vbml_ignore_case = True
+bp.labeler.custom_rules["text_contains"] = TextContainsRule
 
 @logger.catch
 async def select_what(message):
@@ -67,7 +68,8 @@ async def start_game_handler(message: Message):
             config.maxplayers,
             config.recruitmentendtimeminute
         ).strip(),
-        keyboard = keyboards.GAME_JOIN
+        # keyboard = keyboards.GAME_JOIN
+        keyboard=keyboards.EMPTY
     )
     asyncio.create_task(end_recruitment_expired(message))
 
@@ -116,7 +118,9 @@ async def end_game_handler(message: Message):
             random_id = 0
         )
 
-@bp.on.chat_message(text=["+", strings.ru.i_want_to_play])
+@bp.on.chat_message(text_contains=[
+    "+", "плюс", "plus", "➕", "✖", "†", strings.ru.i_want_to_play
+])
 @bp.on.chat_message(payload={"cmd":"implay"})
 @logger.catch
 async def join_player_handler(message: Message):
@@ -143,7 +147,13 @@ async def join_player_handler(message: Message):
                 return None
         else:
             logger.info("olready joind")
-            await message.answer(strings.ru.player_already_joind.format(u.mention))
+            msg = await message.answer(strings.ru.player_already_joind.format(u.mention))
+            await asyncio.sleep(10)
+            await bp.api.messages.delete(
+                peer_id=message.peer_id,
+                cmids=message.conversation_message_id,
+                delete_for_all=1
+            )
 
 @bp.on.raw_event(GroupEventType.MESSAGE_EVENT, dataclass=GroupTypes.MessageEvent)
 @logger.catch
