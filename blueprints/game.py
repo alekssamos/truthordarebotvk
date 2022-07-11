@@ -18,6 +18,7 @@ bp = Blueprint()
 bp.labeler.message_view.replace_mention = True
 bp.labeler.vbml_ignore_case = True
 bp.labeler.custom_rules["text_contains"] = TextContainsRule
+bp.labeler.custom_rules["chat_admin"] = ChatAdminRule
 
 @logger.catch
 async def select_what(message):
@@ -31,12 +32,14 @@ async def select_what(message):
             return None
         u1, u2 = pair
         logger.info(f"between {u1.mention} and {u2.mention}")
-        await bp.api.messages.send(
+        chat.last_selection=""
+        msg = await bp.api.messages.send(
             message = strings.ru.select_toa.format(u1.mention, u2.mention),
             peer_id=message.peer_id,
             keyboard=keyboards.TOA_SELECT,
             random_id = 0
         )
+        chat.last_message_id=msg
 
 @logger.catch
 async def end_recruitment_expired(message):
@@ -172,6 +175,16 @@ async def join_player_handler(message: Message):
                 delete_for_all=1
             )
 
+@bp.on.chat_message(text_contains=strings.ru.continue_game.strip("!"))
+@logger.catch
+async def continue_game_by_word(message: Message):
+    logger.info("checking user...")
+    async with async_session() as session:
+        chat = await get_or_create_chat(message.peer_id, session)
+        u1, u2 = await chat.get_current_combination()
+        if ["truth", "action"] in chat.last_selection and u1.user_id == message.from_id:
+            await select_what(message)
+
 @bp.on.raw_event(GroupEventType.MESSAGE_EVENT, dataclass=GroupTypes.MessageEvent)
 @logger.catch
 async def handle_message_event(event: GroupTypes.MessageEvent):
@@ -252,6 +265,8 @@ async def handle_toa_event(event: GroupTypes.MessageEvent):
         u1, u2 = await chat.get_current_combination()
         if u2.user_id == event.object.user_id:
             logger.info(f"{u2.mention} selected {what}")
+            chat.last_selection = what
+            chat.last_message_id = event.object.conversation_message_id
             msg = await bp.api.messages.get_by_conversation_message_id(
                 peer_id = event.object.peer_id,
                 conversation_message_ids = event.object.conversation_message_id

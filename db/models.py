@@ -33,6 +33,8 @@ class VKChats(Base): # type: ignore
     is_recruitment_of_new_players = Column(Boolean, default=False)
     is_active_game = Column(Boolean, default=False)
     combination_current_index = Column(Integer, default=-1)
+    last_message_id = Column(Integer, default=0)
+    last_selection = Column(String(9), default="")
 
     async def start_recruitment(self, session:Any)->None:
         "Запускает набор участников в новую игру"
@@ -94,6 +96,8 @@ class VKChats(Base): # type: ignore
                 ) # type: ignore
         self.is_active_game = status # type: ignore
         self.combination_current_index = -1 # type: ignore
+        self.last_message_id=0 # type: ignore
+        self.last_selection="" # type: ignore
         await session.commit()
 
     async def get_current_combination(self)->Optional[Tuple[Any, Any]]:
@@ -123,6 +127,8 @@ class VKChats(Base): # type: ignore
             return None
         pairs = _get_pairs(self.users)
         self.combination_current_index += 1 # type: ignore
+        self.last_message_id=0 # type: ignore
+        self.last_selection="" # type: ignore
         if self.combination_current_index >= len(pairs):
             logger.debug("We've reached the end of the game!")
             self.combination_current_index -= 1 # type: ignore
