@@ -6,3 +6,4 @@ sqlalchemy[asyncio,mypy]
 aiosqlite
 python-dotenv==0.20.0
 loguru
+alembic==1.8.0
