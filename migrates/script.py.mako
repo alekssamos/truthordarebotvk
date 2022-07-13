@@ -5,8 +5,8 @@ Revises: ${down_revision | comma,n}
 Create Date: ${create_date}
 
 """
-from alembic import op
-import sqlalchemy as sa
+from alembic import op  # type: ignore
+import sqlalchemy as sa  # type: ignore
 ${imports if imports else ""}
 
 # revision identifiers, used by Alembic.

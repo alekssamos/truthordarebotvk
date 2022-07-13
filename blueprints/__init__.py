@@ -1,3 +1,6 @@
 from . import common, game
 
-bps = [common.bp, game.bp, ]
+bps = [
+    common.bp,
+    game.bp,
+]
