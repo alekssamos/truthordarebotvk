@@ -5,6 +5,10 @@ TOKEN: str = ""
 dburl: str = ""
 maxplayers: int = 0
 recruitmentendtimeminute: int = 0
+apiserver_host: str = ""
+apiserver_port: int = 0
+vk_app_id: int = 0
+vk_app_secret: str = ""
 
 
 def load_config():
@@ -13,11 +17,15 @@ def load_config():
 
     load_dotenv()
 
-    global TOKEN, dburl, maxplayers, recruitmentendtimeminute
+    global TOKEN, dburl, maxplayers, recruitmentendtimeminute, apiserver_host, apiserver_port, vk_app_id, vk_app_secret
     TOKEN = getenv("TOKEN")
     dburl = getenv("dburl", "sqlite+aiosqlite:///" + "db.sqlite3")
     maxplayers = int(getenv("maxplayers", 10))
     recruitmentendtimeminute = int(getenv("recruitmentendtimeminute", 5))
+    apiserver_host = getenv("apiserver_host", "127.0.0.1")
+    apiserver_port = int(getenv("apiserver_port", 5000))
+    vk_app_id = int(getenv("vk_app_id", 0))
+    vk_app_secret = getenv("vk_app_secret", "")
     logger.debug("config loaded")
 
 

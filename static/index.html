@@ -1,0 +1,119 @@
+<!DOCTYPE html>
+<html lang="ru">
+  <head>
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width,initial-scale=1,shrink-to-fit=no,user-scalable=no,viewport-fit=cover">
+    <meta content="IE=Edge" http-equiv="X-UA-Compatible">
+    <title>Правда или действие</title>
+    <!-- https://unpkg.com/@vkontakte/vk-bridge/dist/browser.min.js -->
+    <script src="https://unpkg.com/@vkontakte/vk-bridge@2.6.4/dist/browser.min.js"></script>
+    <script src="./script.js?4"></script>
+    <script src="./sw.js?1"></script>
+    <link rel="stylesheet" href="https://stackpath.bootstrapcdn.com/bootstrap/4.4.1/css/bootstrap.min.css" integrity="sha384-Vkoo8x4CGsO3+Hhxv8T/Q5PaXtkKtu6ug5TOeNV6gBiFeWPGFN9MuhOf23Q9Ifjh" crossorigin="anonymous">
+    <style>
+      ul li { list-style: none; }
+      h3 { text-align:center; }
+      .unselectable {
+          -moz-user-select: none;
+          -webkit-user-select: none;
+          -ms-user-select: none;
+          user-select: none;
+        }
+
+        .all {
+          -moz-user-select: all;
+          -webkit-user-select: all;
+          -ms-user-select: all;
+          user-select: all;
+        }
+    </style>
+    <script src="https://cdn.jsdelivr.net/npm/sweetalert2@10"></script>
+    <script type="text/javascript">
+      vkBridge.send('VKWebAppInit');
+    </script>
+    <script src="https://code.jquery.com/jquery-3.4.1.slim.min.js" integrity="sha384-J6qa4849blE2+poT4WnyKhv5vZF5SrPo0iEjwBvKU7imGFAV0wwj1yYfoRSJoZ+n" crossorigin="anonymous"></script>
+    <script src="https://cdn.jsdelivr.net/npm/popper.js@1.16.0/dist/umd/popper.min.js" integrity="sha384-Q6E9RHvbIyZFJoft+2mJbHaEWldlvI9IOYy5n3zV9zzTtmI3UksdQRVvoxMfooAo" crossorigin="anonymous"></script>
+    <script src="https://stackpath.bootstrapcdn.com/bootstrap/4.4.1/js/bootstrap.min.js" integrity="sha384-wfSDF2E50Y2D1uUdj0O3uMBJnjuUD4Ih7YwaYd1iqfktj0Uod8GCExl3Og8ifwB6" crossorigin="anonymous"></script>
+    <script>
+    $(document).ready(function(){
+        hash = window.location.hash.replace('[','').replace(']','').replace('"', '');
+        if(hash.length>2) {
+            $('a[href="' + hash + '"]').trigger('click');
+        }
+    });
+    </script>
+  </head>
+  <body>
+    <div id="app" class="unselectable">
+      <br>
+      <h6 style="text-align:center;">Правда или действие</h6>
+      <br>
+      <div class="container">
+        <ul class="nav nav-tabs" role="tablist">
+          <li class="nav-item">
+            <a role="tab" aria-selected=true"" class="nav-link active" data-toggle="tab" href="#anketa">Анкета</a>
+          </li>
+          <li class="nav-item">
+            <a role="tab" class="nav-link" data-toggle="tab" href="#rules">Правила</a>
+          </li>
+        </ul>
+        <div class="tab-content">
+          <div class="tab-pane fade show active" id="anketa">
+            <p>
+                <ul>
+                    <li>🔹 Эта мини-анкета поможет вам и другим участникам ориентироваться в том, какие действия в рамках игры вы готовы выполнить, а какие для вас неприемлемы.</li>
+                    <li>🔹 Ссылка на анкету появляется в начале каждой игры и вы можете переходить по ней, чтобы внести изменения, если есть такая необходимость. Эта возможность исключается на время проведения игры. </li>
+                    <li>❕Хотя бы один пункт из этих трёх должен быть отмечен, как допустимый❕</li>
+                </ul>
+                <br>
+                <form id="anketaform">
+                    <input type="checkbox" id="dch" name="dch">
+                    <label for="dch">Дч</label>
+                    &nbsp; &nbsp; &nbsp; 
+                    <input type="checkbox" id="gg" name="gg">
+                    <label for="gg">Гг</label>
+                    &nbsp; &nbsp; &nbsp; 
+                    <input type="checkbox" id="ul" name="ul">
+                    <label for="ul">Ул</label>
+                    &nbsp; &nbsp; &nbsp; 
+                </form>
+            <br>
+            <br>
+            <span>🧊 Расшифровка аббревиатур:</span>
+            <br>
+            <ul>
+                <li>"Дч"-  это о том, готовы ли вы взаимодействовать с кем-то из других людей при выполнении задания. </li>
+                <li>"Гг"- съесть/потрогать/вдохнуть нечто неприятное или что-то вроде того.</li>
+<li>"Ул"- это задание, которое включает в себя смену вашей текущей локации. Действует ограничение по размерам города проживания человека, который должен будет выполнять задание. </li>
+</ul>
+<p>
+<br>
+🔹 Аббревиатуры пунктов, указанных вами, как приемлемые, будут отмечены после вашего имени/ника при каждом упоминании вас в игре также, как и у других участников. Это сделано для вашего же удобства, чтобы было проще ориентироваться в том, кто какие задачи готов выполнить в течение игры. <br>
+<br>
+Возвращайтесь в беседу, изменения будут сохранены.<br>
+            </p>
+          </div>
+          <div class="tab-pane fade" id="rules">
+          <p>
+💠 Здравствуй, человек! 💠<br>
+Эта беседа создана для игры "Правда или Действие"<br>
+<br>
+Несколько важных моментов:<br>
+</p>
+<ul>
+<li>🔹 Те участники чата, которые онлайн, созываются ежедневно для новой игры уведомлением в 15:00, а также в 18:00, при условии, что предыдущая игра завершена к этому времени. </li>
+<li>🔹 Если вдруг игра уже началась в тот момент, когда вы попали в беседу- поучаствовать в ней не получится, нужно дождаться следующей.</li>
+<li>🔹 Вы можете находиться в чате в роли наблюдателя, но выносить контент на широкую публику запрещено.</li>
+<li>❕Всё, что попадает под отметку 18+, а также грубость и оскорбления- недопустимо. Этот запрет распространяется и на саму игру и на содержание беседы❕</li>
+</ul>
+<p>
+🏙️ Правила игры доступны к ознакомлению командой "Кай, правила", вся информация по этой ссылке<br>
+<br>
+💙 Приятных решений, хорошего настроения!
+</p>
+          </div>
+        </div>
+      </div>
+    </div>
+  </body>
+</html>
