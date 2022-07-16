@@ -6,7 +6,7 @@ from services.users import get_or_create_user  # type: ignore
 from db import async_session
 from sqlalchemy.future import select
 from sqlalchemy.orm import selectinload
-from db.models import VKChats
+from db.models import VKChats, VKUsers
 from loguru import logger
 
 try:
@@ -19,7 +19,6 @@ except Exception:
 
 
 @web.middleware
-@logger.catch
 async def append_headers(request, handler):
     response = await handler(request)
     response.headers.update(
@@ -38,7 +37,6 @@ routes.static("/static", path_to_static_folder)
 
 
 @routes.get("/settings")
-@logger.catch
 async def get_settings(request):
     from loader import bot
 
@@ -52,12 +50,10 @@ async def get_settings(request):
     async with async_session() as session:
         u = await get_or_create_user(user_id=user_id, session=session, api=bot.api)
         result = await session.execute(
-            select(VKChats).where(VKChats.is_active_game is True)
-        ).options(selectinload("users"))
-        for the_chat in result.scalar().all():
-            if user_id in [_u.user_id for _u in the_chat.users]:
-                locked = True
-            break
+            select(VKUsers).where(VKChats.is_active_game is True)
+        )
+        if result.scalar() is not None and result.scalar().count() > 0:
+            locked = True
         settings.update({"locked":locked, "nickname": u.nickname, "dch": u.dch, "gg": u.gg, "ul": u.ul})
     return web.json_response(settings)
 
