@@ -4,6 +4,9 @@ from aiohttp import web
 from services.vkapp import is_valid  # type: ignore
 from services.users import get_or_create_user  # type: ignore
 from db import async_session
+from sqlalchemy.future import select
+from sqlalchemy.orm import selectinload
+from db.models import VKChats
 from loguru import logger
 
 try:
@@ -42,12 +45,20 @@ async def get_settings(request):
     user_id = int(request.query.get("user_id", 0))
     if user_id == 0:
         logger.error(f"incorrect user_id: {request.query}")
-        return web.json_response({"error": "id"})
+        return web.json_response({"error": "user not found"}, status=404)
     logger.info(f"get settings for user_id={user_id}")
+    locked = False
     settings = {}
     async with async_session() as session:
         u = await get_or_create_user(user_id=user_id, session=session, api=bot.api)
-        settings["nickname"] = u.nickname
+        result = await session.execute(
+            select(VKChats).where(VKChats.is_active_game is True)
+        ).options(selectinload("users"))
+        for the_chat in result.scalar().all():
+            if user_id in [_u.user_id for _u in the_chat.users]:
+                locked = True
+            break
+        settings.update({"locked":locked, "nickname": u.nickname, "dch": u.dch, "gg": u.gg, "ul": u.ul})
     return web.json_response(settings)
 
 

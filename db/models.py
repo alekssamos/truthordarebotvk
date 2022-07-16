@@ -19,6 +19,9 @@ class VKUsers(Base):  # type: ignore
     user_id = Column(Integer, unique=True)
     peer_id = Column(BigInteger, ForeignKey("vkchats.peer_id"))
     nickname = Column(String(55))
+    dch = Column(Boolean, default=False)
+    gg = Column(Boolean, default=False)
+    ul = Column(Boolean, default=False)
     chats = relationship("VKChats", backref="users")  # type: ignore
 
     @property
@@ -26,7 +29,14 @@ class VKUsers(Base):  # type: ignore
         nickname = self.nickname  # type: ignore
         for s in "[]()@|\r\n":
             nickname = nickname.replace(s, "")
-        return f"[id{self.user_id}|{nickname}]"
+        append_str = ""
+        if self.dch:
+            append_str = append_str + " Дч "
+        if self.gg:
+            append_str = append_str + " Гг "
+        if self.ul:
+            append_str = append_str + " Ул "
+        return f"[id{self.user_id}|{nickname}] ({append_str})"
 
     def __repr__(self):
         return f"<VKUser with user_id={self.user_id}>"
