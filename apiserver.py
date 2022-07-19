@@ -49,11 +49,12 @@ async def get_settings(request):
     settings = {}
     async with async_session() as session:
         u = await get_or_create_user(user_id=user_id, session=session, api=bot.api)
-        result = await session.execute(
-            select(VKUsers).where(VKChats.is_active_game is True)
-        )
-        if result.scalar() is not None and result.scalar().count() > 0:
-            locked = True
+        the_chat = u.chats
+        if the_chat is not None:
+            locked = the_chat.is_active_game
+            logger.debug(f"found chat with peer_id={the_chat.peer_id}")
+        else:
+            logger.debug("the user does not belong to any chats")
         settings.update(
             {
                 "locked": locked,
