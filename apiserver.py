@@ -54,7 +54,15 @@ async def get_settings(request):
         )
         if result.scalar() is not None and result.scalar().count() > 0:
             locked = True
-        settings.update({"locked":locked, "nickname": u.nickname, "dch": u.dch, "gg": u.gg, "ul": u.ul})
+        settings.update(
+            {
+                "locked": locked,
+                "nickname": u.nickname,
+                "dch": u.dch,
+                "gg": u.gg,
+                "ul": u.ul,
+            }
+        )
     return web.json_response(settings)
 
 
