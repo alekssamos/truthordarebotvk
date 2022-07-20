@@ -1,3 +1,4 @@
+from typing import Any
 import os
 import os.path
 from aiohttp import web
@@ -10,6 +11,15 @@ from db.models import VKChats, VKUsers
 from loguru import logger
 import config
 
+
+def tobool(o: Any) -> bool:
+    if isinstance(o, str) and o.lower() in ["1", "true", "on"]:
+        return True
+    if isinstance(o, str) and o.lower() in ["0", "false", "off"]:
+        return False
+    return not not o
+
+
 try:
     path_to_static_folder = os.path.join(os.path.dirname(__file__), "static")
     if not os.path.isdir(path_to_static_folder):
@@ -21,8 +31,10 @@ except Exception:
 
 @web.middleware
 async def check_request(request, handler):
-    if request.query.get("vk_user_id", None) is not None and not is_valid(
-        query=request.query, secret=config.vk_app_secret
+    full_query = dict(request.query)
+    full_query.update((await request.post()))
+    if full_query.get("vk_user_id", None) is not None and not is_valid(
+        query=full_query, secret=config.vk_app_secret
     ):
         logger.debug("The request failed verification")
         return web.json_response({"error": "sign"})
@@ -49,13 +61,16 @@ routes.static("/static", path_to_static_folder)
 
 
 @routes.get("/settings")
+@routes.post("/settings")
 async def get_settings(request):
     from loader import bot
 
-    user_id = int(request.query.get("vk_user_id", 0))
+    full_query = dict(request.query)
+    full_query.update((await request.post()))
+    user_id = int(full_query.get("vk_user_id", 0))
     if user_id == 0:
         logger.error(f"incorrect user_id: {request.query}")
-        return web.json_response({"error": "user not found"}, status=404)
+        return web.json_response({"error": "user"}, status=404)
     logger.info(f"get settings for user_id={user_id}")
     locked = False
     settings = {}
@@ -67,6 +82,20 @@ async def get_settings(request):
             logger.debug(f"found chat with peer_id={the_chat.peer_id}")
         else:
             logger.debug("the user does not belong to any chats")
+        updated: bool = False
+        if not locked:
+            if full_query.get("dch", None) is not None:
+                u.dch = tobool(full_query.get("dch"))
+                updated = True
+            if full_query.get("gg", None) is not None:
+                u.gg = tobool(full_query.get("gg"))
+                updated = True
+            if full_query.get("ul", None) is not None:
+                u.ul = tobool(full_query.get("ul"))
+                updated = True
+            await session.commit()
+            if updated:
+                logger.info("The settings have been updated!")
         settings.update(
             {
                 "locked": locked,
@@ -74,6 +103,7 @@ async def get_settings(request):
                 "dch": u.dch,
                 "gg": u.gg,
                 "ul": u.ul,
+                "updated": updated,
             }
         )
     return web.json_response(settings)
