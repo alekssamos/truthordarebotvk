@@ -57,11 +57,11 @@ async def append_headers(request, handler):
 
 app = web.Application(middlewares=[append_headers, check_request])
 routes = web.RouteTableDef()
-routes.static("/static", path_to_static_folder)
+routes.static(f"{config.apiserver_base_url}static", path_to_static_folder)
 
 
-@routes.get("/settings")
-@routes.post("/settings")
+@routes.get(f"{config.apiserver_base_url}settings")
+@routes.post(f"{config.apiserver_base_url}settings")
 async def get_settings(request):
     from loader import bot
 
