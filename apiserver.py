@@ -55,7 +55,14 @@ async def append_headers(request, handler):
     return response
 
 
-app = web.Application(middlewares=[append_headers, check_request])
+@web.middleware
+async def logger_requests(request, handler):
+    logger.debug(f"{request.method} {request.path}")
+    response = await handler(request)
+    return response
+
+
+app = web.Application(middlewares=[append_headers, check_request, logger_requests])
 routes = web.RouteTableDef()
 routes.static(f"{config.apiserver_base_url}static", path_to_static_folder)
 
