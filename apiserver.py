@@ -8,6 +8,7 @@ from sqlalchemy.future import select
 from sqlalchemy.orm import selectinload
 from db.models import VKChats, VKUsers
 from loguru import logger
+import config
 
 try:
     path_to_static_folder = os.path.join(os.path.dirname(__file__), "static")
@@ -16,6 +17,17 @@ try:
         logger.info(f"static folder created: {path_to_static_folder}")
 except Exception:
     logger.exception(f"static folder {path_to_static_folder} creation error")
+
+
+@web.middleware
+async def check_request(request, handler):
+    if request.query.get("vk_user_id", None) is not None and not is_valid(
+        query=request.query, secret=config.vk_app_secret
+    ):
+        logger.debug("The request failed verification")
+        return web.json_response({"error": "sign"})
+    response = await handler(request)
+    return response
 
 
 @web.middleware
@@ -31,7 +43,7 @@ async def append_headers(request, handler):
     return response
 
 
-app = web.Application(middlewares=[append_headers])
+app = web.Application(middlewares=[append_headers, check_request])
 routes = web.RouteTableDef()
 routes.static("/static", path_to_static_folder)
 
@@ -40,7 +52,7 @@ routes.static("/static", path_to_static_folder)
 async def get_settings(request):
     from loader import bot
 
-    user_id = int(request.query.get("user_id", 0))
+    user_id = int(request.query.get("vk_user_id", 0))
     if user_id == 0:
         logger.error(f"incorrect user_id: {request.query}")
         return web.json_response({"error": "user not found"}, status=404)
