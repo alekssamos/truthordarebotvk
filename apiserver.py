@@ -37,7 +37,7 @@ async def check_request(request, handler):
         query=full_query, secret=config.vk_app_secret
     ):
         logger.debug("The request failed verification")
-        return web.json_response({"error": "sign"})
+        return web.json_response({"error": "sign"}, status=403)
     response = await handler(request)
     return response
 
