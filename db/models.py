@@ -25,7 +25,13 @@ class VKUsers(Base):  # type: ignore
     chats = relationship("VKChats", backref="users")  # type: ignore
 
     @property
+    def is_field_in(self) -> bool:
+        return self.dch or self.gg or self.ul or False  # type: ignore
+
+    @property
     def mention(self) -> str:
+        import strings
+
         nickname = self.nickname  # type: ignore
         for s in "[]()@|\r\n":
             nickname = nickname.replace(s, "")
@@ -36,6 +42,8 @@ class VKUsers(Base):  # type: ignore
             append_str = append_str + " Гг "
         if self.ul:
             append_str = append_str + " Ул "
+        if not self.is_field_in:
+            append_str = strings.ru.the_questionnaire_is_not_filled_in
         return f"[id{self.user_id}|{nickname}] ({append_str})"
 
     def __repr__(self):

@@ -100,10 +100,17 @@ async def start_game_handler(message: Message):
 async def end_recruitment_handler(message: Message):
     logger.info("end recruitment")
     enum_players: str = ""
+    enum_not_players: str = ""
     async with async_session() as session:
         chat = await get_or_create_chat(message.peer_id, session)
         if not chat.is_recruitment_of_new_players:
             return None
+        players_in_game: list = list(filter(lambda x: x.is_field_in, chat.users))
+        players_not_in_game: list = list(
+            filter(lambda x: not x.is_field_in, chat.users)
+        )
+        chat.users = players_in_game
+        await session.commit()
         try:
             await chat.stop_recruitment(session)
             await chat.start_game(session)
@@ -115,7 +122,12 @@ async def end_recruitment_handler(message: Message):
             return None
         finally:
             await session.commit()
-        enum_players = ", ".join([u.mention for u in chat.users])
+        enum_players = ", ".join([u.mention for u in players_in_game])
+        enum_not_players = ", ".join([u.nickname for u in players_not_in_game])
+        await message.answer(
+            strings.ru.drops_out_of_the_game.format(enum_not_players),
+            keyboard=keyboards.EMPTY,
+        )
         await message.answer(
             strings.ru.recruitment_completed.format(enum_players),
             keyboard=keyboards.EMPTY,
@@ -153,8 +165,23 @@ async def join_player_handler(message: Message):
     async with async_session() as session:
         chat = await get_or_create_chat(message.peer_id, session)
         u = await get_or_create_user(message.from_id, bp.api, session)
+        if u.chats is not None and u.chats.peer_id != chat.peer_id:
+            logger.info("The user wants to join the games in two chats")
+            msg = await message.answer(
+                strings.ru.player_already_joind_in_another_chat.format(u.mention)
+            )
+            await asyncio.sleep(10)
+            await bp.api.messages.delete(
+                peer_id=message.peer_id, message_ids=msg, delete_for_all=1
+            )
+            return None
         if not chat.is_recruitment_of_new_players:
             logger.debug("no recruitment in thith moment")
+            msg = await message.answer(strings.ru.not_recruitment.format(u.mention))
+            await asyncio.sleep(10)
+            await bp.api.messages.delete(
+                peer_id=message.peer_id, message_ids=msg, delete_for_all=1
+            )
             return None
         c = len(chat.users)
         if u.user_id not in [i.user_id for i in chat.users]:

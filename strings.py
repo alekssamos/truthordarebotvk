@@ -34,6 +34,7 @@ class ru:
         Недостаточно участников для начала игры.
     """
     player_joind = "{} присоединяется к игре! Нас уже {}/{}."
+    player_already_joind_in_another_chat = "{}, Вы уже играете в другом чате!"
     player_already_joind = "{}, Вы уже участвуете."
     select_toa = """
         Очередь {} спрашивать {}.
@@ -42,3 +43,9 @@ class ru:
     button_only_for = "Эту кнопку может нажать только {}"
     game_already_started = "Игра всё ещё идёт. Сначала завершите её"
     recruitment_already_started = "Набор уже начат"
+    the_questionnaire_is_not_filled_in = "анкета не заполнена"
+    not_recruitment = "{}, В данный момент набор в игру не проводится!"
+    drops_out_of_the_game = """
+        {},
+        Вы не заполнили анкету и поэтому в игре не участвуете.
+    """
