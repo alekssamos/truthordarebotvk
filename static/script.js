@@ -38,9 +38,9 @@ if (!vkConnect.isEmbedded() && !vkConnect.isIframe() && !vkConnect.isStandalone(
 var api_url = "https://visionbot.ru/tod/api/settings"+window.location.search;
 
 function got_settings(data) {
-    $("#dch").checked = data.dch;
-    $("#gg").checked = data.gg;
-    $("#ul").checked = data.ul;
+    $("#dch")[0].checked = data.dch;
+    $("#gg")[0].checked = data.gg;
+    $("#ul")[0].checked = data.ul;
     if (data.locked) {
         Swal.fire("Ошибка", "Изменение настроек во время игры невозможно.<br> Дождитесь окончания игры в беседе.", "error");
     }
