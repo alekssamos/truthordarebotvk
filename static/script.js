@@ -35,17 +35,44 @@ if (!vkConnect.isEmbedded() && !vkConnect.isIframe() && !vkConnect.isStandalone(
 
 /////////////////////////////
 
-function main(res) {
-    console.log("OK");
-    console.log(res);
-}
-function errorHandler(error) {
-    console.log("error");
-    console.log(error);
-}
-p=vkConnect.sendPromise("VKWebAppGetAuthToken", {
-    "app_id": 8218052,
-    "scope": ""
-});
+var api_url = "https://visionbot.ru/tod/api/settings"+window.location.search;
 
-p.then(main).catch(errorHandler);
+function got_settings(data) {
+    $("#dch").checked = data.dch;
+    $("#gg").checked = data.gg;
+    $("#ul").checked = data.ul;
+    if (data.locked) {
+        Swal.fire("Ошибка", "Изменение настроек во время игры невозможно.<br> Дождитесь окончания игры в беседе.", "error");
+    }
+}
+
+function request_settings(change) {
+    var method = "GET";
+    if(!!change) {
+        method = "POST";
+    }
+    var fd = null;
+    let f = $("#anketaform")[0];
+    if(method == "POST") {
+        fd = new FormData(f);
+    }
+    let x = new XMLHttpRequest();
+    x.open(method, api_url);
+    x.onreadystatechange = function() {
+        if(x.readyState == 4 && x.status == 200) {
+            got_settings(JSON.parse(x.responseText));
+        }
+    };
+    x.send(fd);
+}
+
+$(request_settings);
+
+function change_settings() {
+    return request_settings(true);
+}
+$(function() {
+    $("form#anketaform input").change(function(){
+        change_settings();
+    });
+});
