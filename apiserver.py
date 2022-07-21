@@ -90,16 +90,11 @@ async def get_settings(request):
         else:
             logger.debug("the user does not belong to any chats")
         updated: bool = False
-        if not locked:
-            if full_query.get("dch", None) is not None:
-                u.dch = tobool(full_query.get("dch"))
-                updated = True
-            if full_query.get("gg", None) is not None:
-                u.gg = tobool(full_query.get("gg"))
-                updated = True
-            if full_query.get("ul", None) is not None:
-                u.ul = tobool(full_query.get("ul"))
-                updated = True
+        if not locked and query.method.lower() == "post":
+            updated = True
+            u.dch = tobool(full_query.get("dch", "false"))
+            u.gg = tobool(full_query.get("gg", "false"))
+            u.ul = tobool(full_query.get("ul", "false"))
             await session.commit()
             if updated:
                 logger.info("The settings have been updated!")
