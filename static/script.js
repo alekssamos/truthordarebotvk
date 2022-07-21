@@ -61,7 +61,7 @@ function request_settings(change) {
     x.open(method, api_url);
     x.onreadystatechange = function() {
         if(x.readyState == 4 && x.status == 200) {
-            got_settings(JSON.parse(x.responseText));
+            got_settings(JSON.parse(x.responseText), (method == "POST"));
         }
     };
     x.send(fd);
