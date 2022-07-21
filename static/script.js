@@ -58,7 +58,8 @@ function request_settings(change) {
         fd = $("#anketaform").serialize();
     }
     let x = new XMLHttpRequest();
-    x.open(method, api_url);
+    x.open(method, api_url, true);
+    x.setRequestHeader("Content-Type", "application/x-www-form-urlencoded");
     x.onreadystatechange = function() {
         if(x.readyState == 4 && x.status == 200) {
             got_settings(JSON.parse(x.responseText), (method == "POST"));
