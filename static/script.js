@@ -57,6 +57,7 @@ function request_settings(change) {
     if(method == "POST") {
         fd = $("#anketaform").serialize();
     }
+    if($("div.loader").hasClass("hide")) $("div.loader").removeClass("hide");
     let x = new XMLHttpRequest();
     x.open(method, api_url, true);
     x.setRequestHeader("Content-Type", "application/x-www-form-urlencoded");

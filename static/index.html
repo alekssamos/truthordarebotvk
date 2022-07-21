@@ -41,18 +41,18 @@
         }
     });
     </script>
-    <script src="./script.js?4"></script>
+    <script src="./script.js?5"></script>
     <script src="./sw.js?1"></script>
   </head>
   <body>
     <div id="app" class="unselectable">
-      <br>
+      <br><br><br>
       <h6 style="text-align:center;">Правда или действие</h6>
       <br>
       <div class="container">
         <ul class="nav nav-tabs" role="tablist">
           <li class="nav-item">
-            <a role="tab" aria-selected=true"" class="nav-link active" data-toggle="tab" href="#anketa">Анкета</a>
+            <a role="tab" aria-selected="true" class="nav-link active" data-toggle="tab" href="#anketa">Анкета</a>
           </li>
           <li class="nav-item">
             <a role="tab" class="nav-link" data-toggle="tab" href="#rules">Правила</a>
@@ -67,9 +67,6 @@
                     <li>❕Хотя бы один пункт из этих трёх должен быть отмечен, как допустимый❕</li>
                 </ul>
                 <br>
-                <div class="loader">
-                    <img alt="Загрузка..." src="./loader.gif" width="42" height="42">
-                </div>
                 <form id="anketaform" class="hide">
                     <input type="checkbox" id="dch" name="dch">
                     <label for="dch">Дч</label>
@@ -81,6 +78,9 @@
                     <label for="ul">Ул</label>
                     &nbsp; &nbsp; &nbsp; 
                 </form>
+                <div class="loader">
+                    <img alt="Загрузка..." src="./loader.gif" width="42" height="42">
+                </div>
             <br>
             <br>
             <span>🧊 Расшифровка аббревиатур:</span>

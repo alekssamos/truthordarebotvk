@@ -90,21 +90,23 @@ async def get_settings(request):
         else:
             logger.debug("the user does not belong to any chats")
         updated: bool = False
+        _params: list = [u.dch, u.gg, u.ul]
         if not locked and request.method.lower() == "post":
             updated = True
             u.dch = tobool(full_query.get("dch", "false"))
             u.gg = tobool(full_query.get("gg", "false"))
             u.ul = tobool(full_query.get("ul", "false"))
-            await session.commit()
+            updated = [u.dch, u.gg, u.ul] != _params
             if updated:
+                await session.commit()
                 logger.info("The settings have been updated!")
         settings.update(
             {
                 "locked": locked,
                 "nickname": u.nickname,
-                "dch": u.dch,
-                "gg": u.gg,
-                "ul": u.ul,
+                "dch": tobool(u.dch),
+                "gg": tobool(u.gg),
+                "ul": tobool(u.ul),
                 "updated": updated,
             }
         )
