@@ -37,11 +37,13 @@ if (!vkConnect.isEmbedded() && !vkConnect.isIframe() && !vkConnect.isStandalone(
 
 var api_url = "https://visionbot.ru/tod/api/settings"+window.location.search;
 
-function got_settings(data) {
+function got_settings(data, changed) {
     $("#dch")[0].checked = data.dch;
     $("#gg")[0].checked = data.gg;
     $("#ul")[0].checked = data.ul;
-    if (data.locked) {
+    if($("#anketaform").hasClass("hide")) $("#anketaform").removeClass("hide");
+    if(!$("div.loader").hasClass("hide")) $("div.loader").addClass("hide");
+    if (!!changed && data.locked) {
         Swal.fire("Ошибка", "Изменение настроек во время игры невозможно.<br> Дождитесь окончания игры в беседе.", "error");
     }
 }
@@ -52,9 +54,8 @@ function request_settings(change) {
         method = "POST";
     }
     var fd = null;
-    let f = $("#anketaform")[0];
     if(method == "POST") {
-        fd = new FormData(f);
+        fd = $("#anketaform").serialize();
     }
     let x = new XMLHttpRequest();
     x.open(method, api_url);
@@ -66,13 +67,15 @@ function request_settings(change) {
     x.send(fd);
 }
 
-$(request_settings);
+$(function(){
+    request_settings(false);
+});
 
 function change_settings() {
     return request_settings(true);
 }
 $(function() {
     $("form#anketaform input").change(function(){
-        change_settings();
+        window.setTimeout(        change_settings, 10);
     });
 });
