@@ -26,3 +26,10 @@ TOA_SELECT = (
     .add(Callback(strings.ru.action, payload={"cmd": "action"}))
     .get_json()
 )
+
+RULES_AND_QUESTIONNAIRE = (
+    Keyboard(one_time=False, inline=True)
+    .add(Callback(strings.ru.rules_btn, payload={"cmd": "open_rules"}))
+    .add(Callback(strings.ru.questionnaire_btn, payload={"cmd": "open_questionnaire"}))
+    .get_json()
+)

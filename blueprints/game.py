@@ -3,7 +3,7 @@ import json
 from loguru import logger
 from db import async_session  # type: ignore
 from vkbottle.bot import Blueprint, Message  # type: ignore
-from vkbottle import Callback, GroupEventType, GroupTypes, ShowSnackbarEvent  # type: ignore
+from vkbottle import GroupEventType, GroupTypes, ShowSnackbarEvent, OpenAppEvent  # type: ignore
 
 from db.models import VKUsers  # type: ignore
 from db.models import VKChats  # type: ignore
@@ -87,10 +87,13 @@ async def start_game_handler(message: Message):
         return None
     await message.answer(
         strings.ru.recruitment_started.format(
-            config.maxplayers, config.recruitmentendtimeminute
+            f"https://vk.com/app{config.vk_app_id}",
+            config.maxplayers,
+            config.recruitmentendtimeminute,
         ).strip(),
         # keyboard = keyboards.GAME_JOIN
-        keyboard=keyboards.EMPTY,
+        # keyboard=keyboards.EMPTY,
+        keyboard=keyboards.RULES_AND_QUESTIONNAIRE,
     )
     asyncio.create_task(end_recruitment_expired(message))
 
@@ -217,6 +220,32 @@ async def continue_game_by_word(message: Message):
             await select_what(message)
 
 
+@logger.catch
+async def open_rules_handler(event: GroupTypes.MessageEvent):
+    import config
+
+    logger.info("The button to open the rules is pressed...")
+    await bp.api.messages.send_message_event_answer(
+        event_id=event.object.event_id,
+        user_id=event.object.user_id,
+        peer_id=event.object.peer_id,
+        event_data=OpenAppEvent(app_id=config.vk_app_id, hash="rules").json(),
+    )
+
+
+@logger.catch
+async def open_questionnaire_handler(event: GroupTypes.MessageEvent):
+    import config
+
+    logger.info("The button to open the questionnaire is pressed...")
+    await bp.api.messages.send_message_event_answer(
+        event_id=event.object.event_id,
+        user_id=event.object.user_id,
+        peer_id=event.object.peer_id,
+        event_data=OpenAppEvent(app_id=config.vk_app_id, hash="anketa").json(),
+    )
+
+
 @bp.on.raw_event(GroupEventType.MESSAGE_EVENT, dataclass=GroupTypes.MessageEvent)
 @logger.catch
 async def handle_message_event(event: GroupTypes.MessageEvent):
@@ -225,6 +254,10 @@ async def handle_message_event(event: GroupTypes.MessageEvent):
         return await handle_toa_event(event)
     if payload.get("cmd", "") == "continue":
         return await handle_selected_toa_event(event)
+    if payload.get("cmd", "") == "open_rules":
+        return await open_rules_handler(event)
+    if payload.get("cmd", "") == "open_questionnaire":
+        return await open_questionnaire_handler(event)
 
 
 async def handle_selected_toa_event(event: GroupTypes.MessageEvent):
