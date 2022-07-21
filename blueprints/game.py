@@ -111,6 +111,12 @@ async def end_recruitment_handler(message: Message):
         )
         chat.users = players_in_game
         await session.commit()
+        if len(players_not_in_game) > 0:
+            enum_not_players = ", ".join([u.nickname for u in players_not_in_game])
+            await message.answer(
+                strings.ru.drops_out_of_the_game.format(enum_not_players),
+                keyboard=keyboards.EMPTY,
+            )
         try:
             await chat.stop_recruitment(session)
             await chat.start_game(session)
@@ -123,11 +129,6 @@ async def end_recruitment_handler(message: Message):
         finally:
             await session.commit()
         enum_players = ", ".join([u.mention for u in players_in_game])
-        enum_not_players = ", ".join([u.nickname for u in players_not_in_game])
-        await message.answer(
-            strings.ru.drops_out_of_the_game.format(enum_not_players),
-            keyboard=keyboards.EMPTY,
-        )
         await message.answer(
             strings.ru.recruitment_completed.format(enum_players),
             keyboard=keyboards.EMPTY,
