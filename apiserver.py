@@ -90,7 +90,7 @@ async def get_settings(request):
         else:
             logger.debug("the user does not belong to any chats")
         updated: bool = False
-        if not locked and query.method.lower() == "post":
+        if not locked and request.method.lower() == "post":
             updated = True
             u.dch = tobool(full_query.get("dch", "false"))
             u.gg = tobool(full_query.get("gg", "false"))
