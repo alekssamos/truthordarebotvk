@@ -110,6 +110,8 @@ class VKChats(Base):  # type: ignore
                     "The game has already started", peer_id=self.peer_id
                 )  # type: ignore
             if len(self.users) < 2:
+                self.users.clear()
+                await session.commit()
                 raise NotEnoughParticipants(
                     "not enough participants", peer_id=self.peer_id
                 )  # type: ignore
