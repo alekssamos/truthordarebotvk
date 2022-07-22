@@ -3,7 +3,7 @@ import json
 from loguru import logger
 from db import async_session  # type: ignore
 from vkbottle.bot import Blueprint, Message  # type: ignore
-from vkbottle import GroupEventType, GroupTypes, ShowSnackbarEvent, OpenAppEvent  # type: ignore
+from vkbottle import GroupEventType, GroupTypes, ShowSnackbarEvent, OpenLinkEvent  # type: ignore
 
 from db.models import VKUsers  # type: ignore
 from db.models import VKChats  # type: ignore
@@ -85,9 +85,10 @@ async def start_game_handler(message: Message):
             peer_id=message.peer_id, message_ids=msg, delete_for_all=1
         )
         return None
+    app_link = f"https://vk.com/app{config.vk_app_id}"
     await message.answer(
         strings.ru.recruitment_started.format(
-            f"https://vk.com/app{config.vk_app_id}",
+            app_link,
             config.maxplayers,
             config.recruitmentendtimeminute,
         ).strip(),
@@ -157,9 +158,7 @@ async def end_game_handler(message: Message):
         )
 
 
-@bp.on.chat_message(
-    text_contains=["+", "плюс", "plus", "➕", "✖", "†", strings.ru.i_want_to_play]
-)
+@bp.on.chat_message(text=["+", "➕", "✖", "†", strings.ru.i_want_to_play])
 @bp.on.chat_message(payload={"cmd": "implay"})
 @logger.catch
 async def join_player_handler(message: Message):
@@ -209,7 +208,7 @@ async def join_player_handler(message: Message):
             )
 
 
-@bp.on.chat_message(text_contains=strings.ru.continue_game.strip("!"))
+@bp.on.chat_message(text=strings.ru.continue_game.lower())
 @logger.catch
 async def continue_game_by_word(message: Message):
     logger.info("checking user...")
@@ -225,11 +224,12 @@ async def open_rules_handler(event: GroupTypes.MessageEvent):
     import config
 
     logger.info("The button to open the rules is pressed...")
+    app_link = f"https://vk.com/app{config.vk_app_id}"
     await bp.api.messages.send_message_event_answer(
         event_id=event.object.event_id,
         user_id=event.object.user_id,
         peer_id=event.object.peer_id,
-        event_data=OpenAppEvent(app_id=config.vk_app_id, hash="rules").json(),
+        event_data=OpenLinkEvent(link=f"{app_link}#rules").json(),
     )
 
 
@@ -238,11 +238,12 @@ async def open_questionnaire_handler(event: GroupTypes.MessageEvent):
     import config
 
     logger.info("The button to open the questionnaire is pressed...")
+    app_link = f"https://vk.com/app{config.vk_app_id}"
     await bp.api.messages.send_message_event_answer(
         event_id=event.object.event_id,
         user_id=event.object.user_id,
         peer_id=event.object.peer_id,
-        event_data=OpenAppEvent(app_id=config.vk_app_id, hash="anketa").json(),
+        event_data=OpenLinkEvent(link=f"{app_link}#anketa").json(),
     )
 
 
