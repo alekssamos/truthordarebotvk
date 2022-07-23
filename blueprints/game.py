@@ -9,6 +9,7 @@ from db.models import VKUsers  # type: ignore
 from db.models import VKChats  # type: ignore
 from services.users import get_or_create_user  # type: ignore
 from services.chats import get_or_create_chat  # type: ignore
+from services.common import messages_edit, messages_send, messages_send_message_event_answer, messages_delete  # type: ignore
 from rules import ChatAdminRule, TextContainsRule
 import errors
 import keyboards
@@ -35,7 +36,8 @@ async def select_what(message):
         u1, u2 = pair
         logger.info(f"between {u1.mention} and {u2.mention}")
         chat.last_selection = ""
-        msg = await bp.api.messages.send(
+        msg = await messages_send(
+            bp.api,
             message=strings.ru.select_toa.format(u1.mention, u2.mention),
             peer_id=message.peer_id,
             keyboard=keyboards.TOA_SELECT,
@@ -73,16 +75,16 @@ async def start_game_handler(message: Message):
         asyncio.create_task(end_recruitment_expired(message))
         msg = await message.answer(strings.ru.recruitment_already_started)
         await asyncio.sleep(10)
-        await bp.api.messages.delete(
-            peer_id=message.peer_id, message_ids=msg, delete_for_all=1
+        await messages_delete(
+            bp.api, peer_id=message.peer_id, message_ids=msg, delete_for_all=1
         )
         return None
     except errors.GameOlreadyStarted as e:
         logger.exception(e.peer_id)
         msg = await message.answer(strings.ru.game_already_started)
         await asyncio.sleep(10)
-        await bp.api.messages.delete(
-            peer_id=message.peer_id, message_ids=msg, delete_for_all=1
+        await messages_delete(
+            bp.api, peer_id=message.peer_id, message_ids=msg, delete_for_all=1
         )
         return None
     app_link = f"https://vk.com/app{config.vk_app_id}"
@@ -150,7 +152,8 @@ async def end_game_handler(message: Message):
             await session.commit()
         except errors.BaseGameException:
             return None
-        await bp.api.messages.send(
+        await messages_send(
+            bp.api,
             message=strings.ru.game_completed,
             peer_id=message.peer_id,
             keyboard=keyboards.EMPTY,
@@ -174,16 +177,16 @@ async def join_player_handler(message: Message):
                 strings.ru.player_already_joind_in_another_chat.format(u.mention)
             )
             await asyncio.sleep(10)
-            await bp.api.messages.delete(
-                peer_id=message.peer_id, message_ids=msg, delete_for_all=1
+            await messages_delete(
+                bp.api, peer_id=message.peer_id, message_ids=msg, delete_for_all=1
             )
             return None
         if not chat.is_recruitment_of_new_players:
             logger.debug("no recruitment in thith moment")
             msg = await message.answer(strings.ru.not_recruitment.format(u.mention))
             await asyncio.sleep(10)
-            await bp.api.messages.delete(
-                peer_id=message.peer_id, message_ids=msg, delete_for_all=1
+            await messages_delete(
+                bp.api, peer_id=message.peer_id, message_ids=msg, delete_for_all=1
             )
             return None
         c = len(chat.users)
@@ -203,8 +206,8 @@ async def join_player_handler(message: Message):
                 strings.ru.player_already_joind.format(u.mention)
             )
             await asyncio.sleep(10)
-            await bp.api.messages.delete(
-                peer_id=message.peer_id, message_ids=msg, delete_for_all=1
+            await messages_delete(
+                bp.api, peer_id=message.peer_id, message_ids=msg, delete_for_all=1
             )
 
 
@@ -225,7 +228,8 @@ async def open_rules_handler(event: GroupTypes.MessageEvent):
 
     logger.info("The button to open the rules is pressed...")
     app_link = f"https://vk.com/app{config.vk_app_id}"
-    await bp.api.messages.send_message_event_answer(
+    await messages_send_message_event_answer(
+        bp.api,
         event_id=event.object.event_id,
         user_id=event.object.user_id,
         peer_id=event.object.peer_id,
@@ -239,7 +243,8 @@ async def open_questionnaire_handler(event: GroupTypes.MessageEvent):
 
     logger.info("The button to open the questionnaire is pressed...")
     app_link = f"https://vk.com/app{config.vk_app_id}"
-    await bp.api.messages.send_message_event_answer(
+    await messages_send_message_event_answer(
+        bp.api,
         event_id=event.object.event_id,
         user_id=event.object.user_id,
         peer_id=event.object.peer_id,
@@ -265,12 +270,14 @@ async def handle_selected_toa_event(event: GroupTypes.MessageEvent):
     async with async_session() as session:
         chat = await get_or_create_chat(event.object.peer_id, session)
         if not chat.is_active_game:
-            await bp.api.messages.delete(
+            await messages_delete(
+                bp.api,
                 peer_id=event.object.peer_id,
                 cmids=event.object.conversation_message_id,
                 delete_for_all=1,
             )
-            await bp.api.messages.send_message_event_answer(
+            await messages_send_message_event_answer(
+                bp.api,
                 event_id=event.object.event_id,
                 user_id=event.object.user_id,
                 peer_id=event.object.peer_id,
@@ -285,7 +292,8 @@ async def handle_selected_toa_event(event: GroupTypes.MessageEvent):
                 peer_id=event.object.peer_id,
                 conversation_message_ids=event.object.conversation_message_id,
             )
-            await bp.api.messages.edit(
+            await messages_edit(
+                bp.api,
                 peer_id=event.object.peer_id,
                 conversation_message_id=event.object.conversation_message_id,
                 message=msg.items[0].text,
@@ -300,7 +308,8 @@ async def handle_selected_toa_event(event: GroupTypes.MessageEvent):
         else:
             logger.info("another user press this button")
             text_answer = strings.ru.button_only_for.format(u1.nickname)
-        await bp.api.messages.send_message_event_answer(
+        await messages_send_message_event_answer(
+            bp.api,
             event_id=event.object.event_id,
             user_id=event.object.user_id,
             peer_id=event.object.peer_id,
@@ -320,12 +329,14 @@ async def handle_toa_event(event: GroupTypes.MessageEvent):
     async with async_session() as session:
         chat = await get_or_create_chat(event.object.peer_id, session)
         if not chat.is_active_game:
-            await bp.api.messages.delete(
+            await messages_delete(
+                bp.api,
                 peer_id=event.object.peer_id,
                 cmids=event.object.conversation_message_id,
                 delete_for_all=1,
             )
-            await bp.api.messages.send_message_event_answer(
+            await messages_send_message_event_answer(
+                bp.api,
                 event_id=event.object.event_id,
                 user_id=event.object.user_id,
                 peer_id=event.object.peer_id,
@@ -341,13 +352,15 @@ async def handle_toa_event(event: GroupTypes.MessageEvent):
                 peer_id=event.object.peer_id,
                 conversation_message_ids=event.object.conversation_message_id,
             )
-            await bp.api.messages.edit(
+            await messages_edit(
+                bp.api,
                 peer_id=event.object.peer_id,
                 conversation_message_id=event.object.conversation_message_id,
                 message=msg.items[0].text,
                 keyboard=keyboards.EMPTY,
             )
-            await bp.api.messages.send(
+            await messages_send(
+                bp.api,
                 peer_id=event.object.peer_id,
                 conversation_message_id=event.object.conversation_message_id,
                 message=strings.ru.selected_toa.format(u2.mention, what_str),
@@ -358,7 +371,8 @@ async def handle_toa_event(event: GroupTypes.MessageEvent):
         else:
             logger.info("another user press this button")
             text_answer = strings.ru.button_only_for.format(u2.nickname)
-        await bp.api.messages.send_message_event_answer(
+        await messages_send_message_event_answer(
+            bp.api,
             event_id=event.object.event_id,
             user_id=event.object.user_id,
             peer_id=event.object.peer_id,
