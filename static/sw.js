@@ -2,7 +2,8 @@ self.addEventListener('install', function(event) {
   event.waitUntil(
     caches.open('v1').then(function(cache) {
       return cache.addAll([
-        '/tod/index.html', '/tod/script.js', '/tod/sw.js'
+        '/tod/index.html', '/tod/script.js', '/tod/sw.js',
+        '/tod/loader.gif'
       ]);
     })
   );

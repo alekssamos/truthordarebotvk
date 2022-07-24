@@ -22,8 +22,12 @@ async def main():
     await runner.setup()
     import config
 
-    host, port = (config.apiserver_host, config.apiserver_port)
-    logger.info(f"Running server on {host}:{port}")
+    host, port, base_url = (
+        config.apiserver_host,
+        config.apiserver_port,
+        config.apiserver_base_url,
+    )
+    logger.info(f"Running server on {host}:{port}{base_url}")
     site = web.TCPSite(runner, host, port)
     await asyncio.gather(bot.run_polling(), site.start())
 

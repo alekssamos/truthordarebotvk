@@ -48,6 +48,11 @@ function got_settings(data, changed) {
     }
 }
 
+function on_xhr_error(x) {
+    resp_clean = x.responseText.replace('<', '&lt;').replace('>', '&gt;');
+    Swal.fire("Ошибка запроса", "Не удалось выполнить запрос.<br> <code>status="+x.status+", readyState="+x.readyState+"</code><br>responseText:<pre>"+resp_clean+"</pre>", "error");
+}
+
 function request_settings(change) {
     var method = "GET";
     if(!!change) {
@@ -61,7 +66,10 @@ function request_settings(change) {
     let x = new XMLHttpRequest();
     x.open(method, api_url, true);
     x.setRequestHeader("Content-Type", "application/x-www-form-urlencoded");
+    x.onerror=function(){ on_xhr_error(x); };
+    x.ontimeout=function(){ on_xhr_error(x); };
     x.onreadystatechange = function() {
+        if(x.status > 399) { on_xhr_error(x); }
         if(x.readyState == 4 && x.status == 200) {
             got_settings(JSON.parse(x.responseText), (method == "POST"));
         }
