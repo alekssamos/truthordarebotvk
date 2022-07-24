@@ -3,7 +3,7 @@ self.addEventListener('install', function(event) {
     caches.open('v1').then(function(cache) {
       return cache.addAll([
         '/tod/index.html', '/tod/script.js', '/tod/sw.js',
-        '/tod/loader.gif'
+        '/tod/combine.min.css', '/tod/combine.min.js', '/tod/loader.gif'
       ]);
     })
   );
