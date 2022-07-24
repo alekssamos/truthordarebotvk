@@ -29,13 +29,15 @@ setCookie(name, null, { expires: -1 })
 
 ///////////////////////////////////
 
-if (!vkConnect.isEmbedded() && !vkConnect.isIframe() && !vkConnect.isStandalone() && vkConnect.isWebView()) {
+if (!vkConnect.isEmbedded() && !vkConnect.isIframe() && !vkConnect.isStandalone() && !vkConnect.isWebView()) {
     window.location.href="https://vk.com/app8218052";
 }
 
 /////////////////////////////
 
 var api_url = "https://visionbot.ru/tod/api/settings"+window.location.search;
+
+function dummy(){}
 
 function got_settings(data, changed) {
     $("#dch")[0].checked = data.dch;
@@ -44,14 +46,14 @@ function got_settings(data, changed) {
     if($("#anketaform").hasClass("hide")) $("#anketaform").removeClass("hide");
     if(!$("div.loader").hasClass("hide")) $("div.loader").addClass("hide");
     if (!!changed && data.locked) {
-        vkBridge.send("VKWebAppTapticNotificationOccurred", {"type": "error"});
+        vkBridge.send("VKWebAppTapticNotificationOccurred", {"type": "error"}).then(dummy).catch(dummy);
         Swal.fire("Ошибка", "Изменение настроек во время игры невозможно.<br> Дождитесь окончания игры в беседе.", "error");
     }
 }
 
 function on_xhr_error(x) {
     resp_clean = x.responseText.replace('<', '&lt;').replace('>', '&gt;');
-    vkBridge.send("VKWebAppTapticNotificationOccurred", {"type": "error"});
+    vkBridge.send("VKWebAppTapticNotificationOccurred", {"type": "error"}).then(dummy).catch(dummy);
     Swal.fire("Ошибка запроса", "Не удалось выполнить запрос.<br> <code>status="+x.status+", readyState="+x.readyState+"</code><br>responseText:<pre>"+resp_clean+"</pre>", "error");
 }
 
@@ -79,14 +81,19 @@ function request_settings(change) {
     x.send(fd);
 }
 
-$(function(){
+/////////////////////
+
+vkBridge.send('VKWebAppInit').then(function(){
     request_settings(false);
 });
 
+/////////////////////
+
 function change_settings() {
-    vkBridge.send("VKWebAppTapticSelectionChanged", {});
+    vkBridge.send("VKWebAppTapticSelectionChanged", {}).then(dummy).catch(dummy);
     return request_settings(true);
 }
+
 $(function() {
     $("form#anketaform input").change(function(){
         window.setTimeout(        change_settings, 10);
@@ -111,7 +118,8 @@ vkBridge.subscribe(function(event){
         break;
     }
 });
-$('a[data-toggle="tab"]').on("click", function(event){
+
+$('a[data-toggle="tab"]').click(function(event){
     console.log("change hash");
     hash = event.target.hash.replace("#", "");
     vkBridge.send("VKWebAppSetLocation", {"location": hash});
