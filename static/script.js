@@ -44,12 +44,14 @@ function got_settings(data, changed) {
     if($("#anketaform").hasClass("hide")) $("#anketaform").removeClass("hide");
     if(!$("div.loader").hasClass("hide")) $("div.loader").addClass("hide");
     if (!!changed && data.locked) {
+        vkBridge.send("VKWebAppTapticNotificationOccurred", {"type": "error"});
         Swal.fire("Ошибка", "Изменение настроек во время игры невозможно.<br> Дождитесь окончания игры в беседе.", "error");
     }
 }
 
 function on_xhr_error(x) {
     resp_clean = x.responseText.replace('<', '&lt;').replace('>', '&gt;');
+    vkBridge.send("VKWebAppTapticNotificationOccurred", {"type": "error"});
     Swal.fire("Ошибка запроса", "Не удалось выполнить запрос.<br> <code>status="+x.status+", readyState="+x.readyState+"</code><br>responseText:<pre>"+resp_clean+"</pre>", "error");
 }
 
@@ -82,10 +84,35 @@ $(function(){
 });
 
 function change_settings() {
+    vkBridge.send("VKWebAppTapticSelectionChanged", {});
     return request_settings(true);
 }
 $(function() {
     $("form#anketaform input").change(function(){
         window.setTimeout(        change_settings, 10);
     });
+});
+
+vkBridge.subscribe(function(event){
+    if (!event.detail) {
+        return;
+    }
+    switch (event.type) {
+        case "VKWebAppLocationChanged":
+        case "VKWebAppChangeFragment":
+            console.log("hash event");
+            hash = event.data.location;
+            if(hash.length < 2) { break; }
+            $('a[href="#' + hash + '"]').trigger('click');
+        break;
+        case "VKWebAppViewRestore":
+            console.log("restore event");
+            request_settings(false);
+        break;
+    }
+});
+$('a[data-toggle="tab"]').on("click", function(event){
+    console.log("change hash");
+    hash = event.target.hash.replace("#", "");
+    vkBridge.send("VKWebAppSetLocation", {"location": hash});
 });
